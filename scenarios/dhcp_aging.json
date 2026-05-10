@@ -1,0 +1,55 @@
+{
+  "id": "dhcp_aging",
+  "name": "Aging 장시간 검증",
+  "plugin": "DHCP",
+  "description": "24시간 연속 DHCP 갱신 사이클 안정성 검증",
+  "on_fail": "stop",
+  "steps": [
+    {
+      "index": 0,
+      "name": "DHCP Renew 송신",
+      "type": "Send",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 5000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 1,
+      "name": "ACK 수신 확인",
+      "type": "Wait",
+      "expected": "0x05",
+      "tolerance": 0,
+      "timeout_ms": 5000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 2,
+      "name": "Lease Time 검증",
+      "type": "Check",
+      "expected": "≥3600s",
+      "tolerance": 10,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    }
+  ],
+  "repeat": {
+    "enabled": true,
+    "mode": "duration",
+    "count": 1,
+    "duration_sec": 86400,
+    "interval_sec": 60
+  }
+}

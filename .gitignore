@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# PyInstaller
+build/
+dist/
+*.spec
+
+# 로그 / 결과물 (로컬 전용)
+logs/
+reports/
+config.json
+
+# 개발 환경
+.venv/
+venv/
+.env
+
+# VS Code
+.vscode/
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Npcap 설치 파일 (용량 큼 - 별도 배포)
+npcap-*.exe

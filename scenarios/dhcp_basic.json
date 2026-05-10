@@ -1,0 +1,107 @@
+{
+  "id": "dhcp_basic",
+  "name": "기본 할당 검증",
+  "plugin": "DHCP",
+  "description": "DISCOVER → OFFER → REQUEST → ACK 정상 흐름 검증",
+  "on_fail": "stop",
+  "steps": [
+    {
+      "index": 0,
+      "name": "DHCP DISCOVER 송신",
+      "type": "Send",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 1,
+      "name": "DHCP OFFER 수신 대기",
+      "type": "Wait",
+      "expected": "0x02",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 2,
+      "name": "제안 IP 주소 검증",
+      "type": "Check",
+      "expected": "192.168.1.x",
+      "tolerance": 5,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 3,
+      "name": "DHCP REQUEST 송신",
+      "type": "Send",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 4,
+      "name": "DHCP ACK 수신 대기",
+      "type": "Wait",
+      "expected": "0x05",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 5,
+      "name": "Lease Time ≥ 3600s 확인",
+      "type": "Assert",
+      "expected": "≥3600s",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 6,
+      "name": "안정화 대기",
+      "type": "Delay",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 500,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    }
+  ],
+  "repeat": {
+    "enabled": false,
+    "mode": "count",
+    "count": 1,
+    "duration_sec": 3600,
+    "interval_sec": 0
+  }
+}

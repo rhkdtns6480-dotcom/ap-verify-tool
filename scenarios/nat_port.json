@@ -1,0 +1,68 @@
+{
+  "id": "nat_port",
+  "name": "포트 매핑 검증",
+  "plugin": "NAT",
+  "description": "WAN→LAN 포트 포워딩 동작 검증",
+  "on_fail": "stop",
+  "steps": [
+    {
+      "index": 0,
+      "name": "포트 포워딩 규칙 확인",
+      "type": "Check",
+      "expected": "TCP:8080→192.168.1.10:80",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 1,
+      "name": "외부 패킷 송신",
+      "type": "Send",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 2,
+      "name": "내부 수신 확인",
+      "type": "Wait",
+      "expected": "수신OK",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 3,
+      "name": "역방향 패킷 확인",
+      "type": "Check",
+      "expected": "응답정상",
+      "tolerance": 5,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    }
+  ],
+  "repeat": {
+    "enabled": false,
+    "mode": "count",
+    "count": 1,
+    "duration_sec": 3600,
+    "interval_sec": 0
+  }
+}

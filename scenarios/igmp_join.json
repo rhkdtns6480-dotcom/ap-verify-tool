@@ -1,0 +1,81 @@
+{
+  "id": "igmp_join",
+  "name": "Multicast 가입 검증",
+  "plugin": "IGMP",
+  "description": "IGMP Join/Leave 및 멀티캐스트 트래픽 수신 검증",
+  "on_fail": "stop",
+  "steps": [
+    {
+      "index": 0,
+      "name": "IGMP Join 송신",
+      "type": "Send",
+      "expected": "224.0.0.1",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 1,
+      "name": "Membership Report 확인",
+      "type": "Wait",
+      "expected": "수신OK",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 2,
+      "name": "멀티캐스트 트래픽 수신",
+      "type": "Check",
+      "expected": "수신정상",
+      "tolerance": 5,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 3,
+      "name": "IGMP Leave 송신",
+      "type": "Send",
+      "expected": "",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    },
+    {
+      "index": 4,
+      "name": "Leave 처리 확인",
+      "type": "Assert",
+      "expected": "트래픽중단",
+      "tolerance": 0,
+      "timeout_ms": 3000,
+      "repeat": 1,
+      "interval_ms": 0,
+      "condition": "",
+      "on_fail": "stop",
+      "retry_count": 3
+    }
+  ],
+  "repeat": {
+    "enabled": false,
+    "mode": "count",
+    "count": 1,
+    "duration_sec": 3600,
+    "interval_sec": 0
+  }
+}
