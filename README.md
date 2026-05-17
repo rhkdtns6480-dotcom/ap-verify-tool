@@ -1,195 +1,137 @@
-# AP Auto Verification Tool
+# AP Auto Verification Tool v0.0.1
 
-> Windows 기반 AP(Access Point) 자동 검증 도구  
-> Python + Tkinter GUI · Scapy 패킷 엔진 · Plugin Architecture
-
----
-
-## 개요
-
-AP 검증에 필요한 DHCP, NAT, IGMP 등의 기능을 플러그인 형태로 구성하고,  
-Master/Slave 인터페이스 간 실제 패킷 송수신을 통해 자동 검증하는 툴입니다.
-
-```
-[Master NIC] ─── [DUT AP] ─── [Slave NIC]
-  DHCP Server       NAT/Bridge     DHCP Client
-  이더넷 4           자동 감지       Wi-Fi
-```
+AP(Access Point) 자동 검증 도구 — Python / Tkinter / Scapy 기반
 
 ---
 
 ## 주요 기능
 
-| 탭 | 기능 |
-|---|---|
-| **토폴로지** | 인터페이스 Master/Slave 지정, AP 자동 감지(NAT/Bridge), 연결상태 확인(ARP+ICMP) |
-| **기능 검증** | 플러그인별 표준 검증 항목 (DHCP/NAT/IGMP/Packet S/D) |
-| **시나리오 검증** | 커스텀 Step 시나리오 편집·실행, 반복/Aging 테스트 |
-| **Syslog** | 레벨별 로그 필터, 파일 저장 (RotatingFileHandler) |
-| **결과서** | Excel (.xlsx) + PDF 자동 생성 |
-| **환경설정** | 경로, 타임아웃, 보고서 헤더 설정 |
+### 토폴로지
+- psutil 기반 인터페이스 자동 감지
+- Master / Slave 역할 지정
+- AP 자동 감지 (Bridge / NAT Mode)
+  - Master + Slave 동시: ARP 스캔 + MAC 교차 분석
+  - Master만: GW ARP → 공인IP: Internet망 / 사설IP: AP(NAT)
+  - Slave만: GW ARP → 공인IP: AP(Bridge) / 사설IP: AP(NAT)
+  - NAT CPE 뒤 Bridge AP 감지 지원
+- 수동 AP 추가 (WAN/LAN MAC 입력, ARP 확인)
+- 노드 드래그 이동 (좌클릭)
+- 노드 간 연결 드래그 (우클릭)
+- 30초 주기 자동 연결 모니터 (ARP + Ping)
+- 우측 상태 요약 패널 (Master/Slave/DUT AP 정보)
+- IP 설정 (고정/DHCP, Gateway/DNS 포함, netsh 적용)
 
-### 핵심 기능 상세
+### Packet S/D
+- UDP 송수신 테스트 (TCP 추후 지원)
+- 동작 모드: S→R / R→S / 양방향 / 송신만 / 수신만
+- 토폴로지 Master/Slave 자동 연동
+- PPS / Mbps / 최대속도 설정
+- 패킷수 / 시간 / 지속 전송
+- NAT 세션 선개통 (Slave 선송신 → NAT Port 자동 파악)
+- 실시간 통계: 송신/수신/손실/RTT/처리량/지터
+- 임계값 알람
 
-- **가상 MAC 관리** — Scapy로 가상 MAC 최대 50개 생성, 각각 독립 DHCP 요청
-- **AP 자동 감지** — ARP 스캔으로 Bridge/NAT Mode 자동 판별, 토폴로지에 DUT AP 표시
-- **실제 패킷 모드** — Scapy + Npcap으로 지정 인터페이스에서 실제 ARP/ICMP 송신
-- **시뮬레이션 모드** — Scapy/Npcap 미설치 시 자동 fallback
+### 기능 검증 시나리오
+- DHCP / NAT / IGMP / Packet S/D 플러그인 (구현 진행 중)
+
+### 규격 검증 시나리오
+- Step 기반 시나리오 편집 및 실행
+
+### Syslog
+- 레벨 필터 (DEBUG/INFO/WARN/ERROR)
+- 검색, 파일 저장
+
+### 결과서 설정
+- Excel + PDF 결과서 생성
 
 ---
 
-## 환경 요구사항
+## 요구사항
 
-### 필수
+```
+Python      3.12+
+Scapy       2.7.0+
+psutil      5.x+
+openpyxl    3.x+
+reportlab   4.x+
+Npcap       1.80+ (WinPcap 호환 모드 필수)
+```
 
-| 항목 | 버전 | 비고 |
-|---|---|---|
-| **Windows** | 10 / 11 (64-bit) | Linux/Mac 미지원 |
-| **Python** | 3.10 이상 (권장 3.14) | |
-| **Npcap** | 1.80 이상 | 패킷 캡처 드라이버 |
-| **관리자 권한** | 필수 | RAW 소켓 사용 |
-
-### Python 패키지
-
-| 패키지 | 버전 | 용도 |
-|---|---|---|
-| `scapy` | 2.7.0+ | 패킷 송수신 (ARP/ICMP/DHCP) |
-| `psutil` | 5.9.0+ | 네트워크 인터페이스 열거 |
-| `openpyxl` | 3.1.0+ | Excel 결과서 생성 |
-| `reportlab` | 4.0.0+ | PDF 결과서 생성 |
-| `tkinter` | 내장 | GUI (Python 기본 포함) |
+```powershell
+pip install scapy psutil openpyxl reportlab
+```
 
 ---
 
-## 설치 방법
-
-### 1. Npcap 설치 (필수, 최초 1회)
-
-```
-https://npcap.com/#download
-```
-> ⚠️ 설치 옵션에서 **"WinPcap API-compatible Mode"** 반드시 체크
-
-### 2. Python 패키지 설치
+## 실행
 
 ```powershell
-# 반드시 실행에 사용하는 python.exe 경로로 설치
-python -m pip install scapy psutil openpyxl reportlab
-```
-
-### 3. 실행
-
-```powershell
-# 반드시 관리자 권한으로 실행
+# 관리자 권한 필요 (netsh IP 설정, Scapy RAW 소켓)
 python main_app.py
 ```
 
+관리자 권한이 없으면 UAC 팝업이 뜨고 자동 재실행됩니다.
+
 ---
 
-## exe 빌드 방법
+## 빌드 (exe)
 
 ```powershell
-# 빌드 전: npcap-1.80.exe를 프로젝트 폴더에 복사해두면 자동 번들됨
+# Npcap 설치파일을 폴더에 넣으면 함께 번들됨
 python build.py
-
-# 디버그 모드 (콘솔 창 유지)
-python build.py --debug
-
-# 폴더 방식 빌드 (빠름, 디버깅용)
-python build.py --onedir
-```
-
-빌드 완료 후 `dist/AP_Verify_Tool.exe` 생성  
-타겟 PC에 Npcap이 없으면 앱 시작 시 자동 설치 안내 다이얼로그 표시
-
----
-
-## 프로젝트 구조
-
-```
-ap_verify_tool/
-├── main_app.py              ← 메인 GUI (6탭)
-├── virtual_mac_manager.py   ← 가상 MAC / DHCP 클라이언트
-├── npcap_check.py           ← Npcap 설치 확인 및 자동 설치
-├── scenario_engine.py       ← 시나리오 실행 엔진 (반복/Aging)
-├── report_writer.py         ← Excel + PDF 결과서
-├── logger.py                ← Syslog (RotatingFileHandler)
-├── build.py                 ← PyInstaller 빌드 스크립트
-├── app.manifest             ← Windows 관리자 권한 설정
-├── requirements.txt
-├── plugins/
-│   ├── base_plugin.py       ← 플러그인 베이스 클래스
-│   └── dummy_plugins.py     ← DHCP/NAT/IGMP/PacketSD (개발 중)
-├── scenarios/               ← 시나리오 JSON 파일
-│   ├── dhcp_basic.json
-│   ├── dhcp_aging.json
-│   ├── nat_port.json
-│   └── igmp_join.json
-└── release_notes/           ← 버전별 릴리즈 노트
-    └── RELEASE_20260510.md
+# 결과물: dist/AP_Verify_Tool.exe
 ```
 
 ---
 
-## 사용 방법
-
-### 기본 검증 흐름
-
-1. **토폴로지 탭** → 인터페이스 선택 → Master/Slave 지정
-2. **📡 AP 감지** 버튼 → DUT AP 자동 감지 및 모드 표시 (NAT/Bridge)
-3. **🔗 연결상태 확인** → ARP + ICMP Ping으로 연결 검증
-4. **기능 검증 탭** → 플러그인 선택 → 표준 검증 실행
-5. **결과서 탭** → Excel/PDF 결과보고서 다운로드
-
-### 가상 MAC DHCP 테스트
-
-1. 토폴로지 탭 → 인터페이스 카드 → **가상 MAC** 버튼
-2. **일괄 생성** → MAC 수(최대 50개) + OUI 프리픽스 입력
-3. **▶ 전체 DHCP 요청** → 병렬로 각 MAC에 IP 할당 요청
-4. 할당된 IP 목록 실시간 확인
-
----
-
-## GitHub 업데이트 방법
-
-프로젝트 루트에서 `push.ps1` 실행:
+## GitHub 업데이트
 
 ```powershell
 .\push.ps1
 ```
 
-자동으로 실행:
-- 날짜별 스냅샷 파일 생성 (`main_app_YYYYMMDD.py`)
-- 릴리즈 노트 작성 프롬프트 (`release_notes/RELEASE_YYYYMMDD.md`)
-- git add / commit / push
+자동으로:
+1. 날짜별 버전 스냅샷 생성
+2. 릴리즈 노트 작성
+3. 커밋 메시지 입력
+4. git push
 
 ---
 
-## 릴리즈 히스토리
+## 파일 구조
 
-| 버전 | 날짜 | 주요 변경 |
-|---|---|---|
-| v0.0.1 | 2026-05-10 | 최초 릴리즈 — 전체 골격 구현 |
-
-> 상세 내역: [`release_notes/`](./release_notes/) 폴더 참조
-
----
-
-## 개발 로드맵
-
-- [ ] DHCP 플러그인 실제 구현 (Scapy 기반)
-- [ ] NAT 플러그인 실제 구현
-- [ ] IGMP 플러그인 실제 구현
-- [ ] 기능 검증 탭 각 플러그인별 검증 UI
-- [ ] PDF 한글 폰트 완전 지원
-- [ ] 코드서명 인증서 적용
-
----
-
-## 라이선스
-
-Private — 개인 프로젝트
+```
+ap_verify_tool/
+├── main_app.py          메인 GUI (8탭)
+├── packet_sd.py         Packet S/D 엔진
+├── scenario_engine.py   시나리오 실행 엔진
+├── report_writer.py     Excel + PDF 결과서
+├── logger.py            Syslog
+├── npcap_check.py       Npcap 설치 확인
+├── build.py             PyInstaller 빌드
+├── push.ps1             GitHub 자동 업로드
+├── app.manifest         Windows 관리자 권한
+├── requirements.txt
+├── docs/
+│   └── packet_sd_spec.md   Packet S/D 기능 정의서
+├── plugins/
+│   ├── base_plugin.py
+│   └── dummy_plugins.py
+└── scenarios/           JSON 시나리오 파일
+```
 
 ---
 
-*개발: lightSUN · 문의: rhkdtns6480@gmail.com*
+## 개발 현황
+
+| 기능 | 상태 |
+|---|---|
+| 토폴로지 / AP 감지 | ✅ 완료 |
+| IP 설정 (netsh) | ✅ 완료 |
+| 30초 자동 모니터 | ✅ 완료 |
+| Packet S/D (UDP) | ✅ 완료 |
+| Packet S/D (TCP) | 🔄 구현 예정 |
+| DHCP 플러그인 | 🔄 구현 예정 |
+| NAT 플러그인 | 🔄 구현 예정 |
+| IGMP 플러그인 | 🔄 구현 예정 |
+| 결과서 (Excel/PDF) | 🔄 연동 예정 |

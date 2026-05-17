@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 5620, in <module>
+    _run()
+    ~~~~^^
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 5616, in _run
+    app = App()
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 5382, in __init__
+    self._build_ui()
+    ~~~~~~~~~~~~~~^^
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 5483, in _build_ui
+    self.pkt_tab       = PacketSDTab(self._tab_container, self)
+                         ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 4077, in __init__
+    self._build()
+    ~~~~~~~~~~~^^
+  File "c:\Users\admin\Desktop\Indivisual AI\Network AI Tool\network auto-QA Tool\ap_verify_tool\main_app.py", line 4407, in _build
+    setting = tk.Frame(top, bg=CLR["bg2"],
+                       ^^^
+NameError: name 'top' is not defined
